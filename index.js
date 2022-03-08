@@ -1,15 +1,95 @@
 const express = require('express')
-const cors = require('cors')
 const app = express()
+const mysql = require('mysql')
+const cors = require('cors')
 require('dotenv').config()
-const { HOST, USERS, PASSWORD, DATABASE }  = process.env
-
-console.log(HOST, USERS, PASSWORD, DATABASE)
-
 app.use(cors())
+app.use(express.json())
+const {HOST, USERS, PASSWORD, DATABASE, PORT} = process.env
 
-commit e6870b87efd38e99b421f51b190ba0e286393583
-Author: Raphae <raphae@pop-os.localdomain>
-Date:   Fri Feb 25 09:48:43 2022 -0300
 
-    Database parameters set in dotenv and passed to index
+const connection = mysql.createConnection({
+    host: HOST,
+    user: USERS,
+    password: PASSWORD,
+    database: DATABASE,
+})
+
+connection.connect( err => {
+    if (err) {
+        console.error('error connecting: ', err)
+        return;
+    }
+
+    console.log('connected as id ' + connection.threadId)
+})
+
+
+
+app.get('/', (req, res) => {
+    connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
+       
+        if (!err) {
+                 res.send({rows: rows, fields: fields})
+        }
+        else {
+            console.log('Erro ao realizar consulta ' + err )
+        }
+    })
+})
+
+app.post('/', (req, res) => {
+    const {foto, nome, telefone, email} = req.body
+    const sqlInsertSintaxy = "INSERT INTO Phonebook (foto, nome, telefone, email) VALUES (?)"
+    const insertValues = [[foto, nome, telefone, email]]
+    connection.query(sqlInsertSintaxy, insertValues, err => {
+        console.log(err)
+    })
+    connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
+       
+        if (!err) {
+            res.send({rows: rows, fields: fields}) 
+        }
+        else {
+            console.log('Erro ao realizar consulta ' + err )
+        }
+    })
+})
+
+app.delete('/', (req, res)=> {
+    const { telefone } = req.body
+    const sqlDeleteSintaxy = "DELETE FROM Phonebook WHERE telefone = (?)"
+    connection.query(sqlDeleteSintaxy, telefone, err => {
+        console.log(err)
+    })
+    connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
+       
+        if (!err) {
+            res.send({rows: rows, fields: fields}) 
+        }
+        else {
+            console.log('Erro ao realizar consulta ' + err )
+        }
+    })
+})
+
+app.put('/', (req,res) => {
+    const {newValue, lineKey, lineChange} = req.body
+    const sqlUpdateSintaxy = `UPDATE Phonebook SET ${lineChange} = '${newValue}' WHERE (telefone = '${lineKey}')`
+    connection.query(sqlUpdateSintaxy, err => {
+        console.log(err)
+    })
+    connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
+       
+        if (!err) {
+            res.send({rows: rows, fields: fields}) 
+        }
+        else {
+            console.log('Erro ao realizar consulta ' + err )
+        }
+    })
+})
+
+app.listen(PORT || 3001, ()=> {
+    console.log('Running on Port 3001')
+})
