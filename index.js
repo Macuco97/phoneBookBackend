@@ -7,7 +7,6 @@ app.use(cors())
 app.use(express.json())
 const {HOST, USERS, PASSWORD, DATABASE, PORT} = process.env
 
-
 const connection = mysql.createConnection({
     host: HOST,
     user: USERS,
