@@ -7,22 +7,13 @@ app.use(cors())
 app.use(express.json())
 const {HOST, USERS, PASSWORD, DATABASE, PORT} = process.env
 
-const connection = mysql.createConnection({
+const connection = mysql.createPool({
+    connectionLimit: 10,
     host: HOST,
     user: USERS,
     password: PASSWORD,
     database: DATABASE,
 })
-
-connection.connect( err => {
-    if (err) {
-        console.error('error connecting: ', err)
-        return;
-    }
-
-    console.log('connected as id ' + connection.threadId)
-})
-
 
 
 app.get('/', (req, res) => {
