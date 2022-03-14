@@ -8,7 +8,7 @@ app.use(express.json())
 const {HOST, USERS, PASSWORD, DATABASE, PORT} = process.env
 
 const connection = mysql.createPool({
-    connectionLimit: 10,
+    connectionLimit: 2,
     host: HOST,
     user: USERS,
     password: PASSWORD,
