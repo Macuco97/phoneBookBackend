@@ -26,14 +26,10 @@ app.get('/', (req, res) => {
                 let newRowFotoToStringBase64 = Buffer.from(rows.foto, "base64").toString()
                 rows.foto = newRowFotoToStringBase64
             })
-            console.log(rows)
-            /*let row = Buffer.from(rows[0].foto, "base64").toString()
-            console.log('linha 26', row)
-            rows[0].foto = row*/
             res.send({rows: rows, fields: fields})
         }
         else {
-            console.log('Erro ao realizar consulta ' + err )
+            console.log('Linha 32', 'Error performing query' + err )
         }
     })
 })
@@ -41,18 +37,22 @@ app.get('/', (req, res) => {
 app.post('/' , upload.single('foto') , (req, res) => {
     const { nome, telefone, email } = req.body
     const foto = req.file.buffer.toString('base64')
-    console.log('linha 36', foto)
     const sqlInsertSintaxy = "INSERT INTO Phonebook (foto, nome, telefone, email) VALUES (?)"
     const insertValues = [[foto, nome, telefone, email]]
     connection.query(sqlInsertSintaxy, insertValues, err => {
-        console.log('linha 42', err)
+        console.log('linha 43', 'app.post insertValues', err)
     })
     connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
+       
         if (!err) {
-            res.send({rows: rows, fields: fields}) 
+            rows.forEach( rows => {
+                let newRowFotoToStringBase64 = Buffer.from(rows.foto, "base64").toString()
+                rows.foto = newRowFotoToStringBase64
+            })
+            res.send({rows: rows, fields: fields})
         }
         else {
-            console.log('Erro ao realizar consulta ' + err )
+            console.log('Error performing query' + err )
         }
     })
     }   
@@ -62,32 +62,41 @@ app.delete('/', (req, res)=> {
     const { telefone } = req.body
     const sqlDeleteSintaxy = "DELETE FROM Phonebook WHERE telefone = (?)"
     connection.query(sqlDeleteSintaxy, telefone, err => {
-        console.log('linha 59', err)
+        console.log('linha 65', 'app.delete err =>', err)
     })
     connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
        
         if (!err) {
+            rows.forEach( rows => {
+                let newRowFotoToStringBase64 = Buffer.from(rows.foto, "base64").toString()
+                rows.foto = newRowFotoToStringBase64
+            })
             res.send({rows: rows, fields: fields}) 
         }
         else {
-            console.log('Erro ao realizar consulta ' + err )
+            console.log('Error performing query' + err )
         }
     })
 })
 
-app.put('/', (req,res) => {
-    const {newValue, lineKey, lineChange} = req.body
+app.put('/', upload.single('photo') , (req,res) => {
+    const newValue = req.file ? req.file.buffer.toString('base64') : req.body.newValue
+    const { lineKey, lineChange} = req.body
     const sqlUpdateSintaxy = `UPDATE Phonebook SET ${lineChange} = '${newValue}' WHERE (telefone = '${lineKey}')`
     connection.query(sqlUpdateSintaxy, err => {
-        console.log('linha 69', err)
+        console.log('linha 86', err)
     })
     connection.query('SELECT * FROM Phonebook', (err, rows, fields) => {
        
         if (!err) {
+            rows.forEach( rows => {
+                let newRowFotoToStringBase64 = Buffer.from(rows.foto, "base64").toString()
+                rows.foto = newRowFotoToStringBase64
+            })
             res.send({rows: rows, fields: fields}) 
         }
         else {
-            console.log('Erro ao realizar consulta ' + err )
+            console.log('Error performing query ' + err )
         }
     })
 })
